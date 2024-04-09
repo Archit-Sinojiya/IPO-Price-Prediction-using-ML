@@ -12,6 +12,14 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import pickle
+import time
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(18, GPIO.OUT, initial = GPIO.LOW)
+GPIO.setup(23, GPIO.OUT, initial = GPIO.LOW)
+
 
 # Load your dataset containing features (IPO Size, Subscription, GMP, Estimated Price, Listing Price) and LT Price
 # Assuming your dataset is in a CSV file named 'data.csv'
@@ -37,6 +45,7 @@ test_score = model.score(x_test, y_test)
 print(f"Training R^2 score: {train_score}")
 print(f"Testing R^2 score: {test_score}")
 ip = (285, 150, 310, 340, 650, 730)
+ip1 = (285, 150, 310, 340, 1200, 730)
 arr = np.asarray(ip)
 ip_reshaped = arr.reshape(1,-1)
 pre = model.predict(ip_reshaped)
@@ -44,10 +53,18 @@ print(pre)
 print(" LT % is ", ((pre-arr[5])/(pre)*100))
 
 if(pre>= 1.2*arr[5]):
-  print("Must buy")
+    print("Must buy")
+    GPIO.output(18, GPIO.HIGH)
+    time.sleep(3)
 
 else:
-  print("Not buy")
+    print("Not buy")
+    GPIO.output(23, GPIO.HIGH)
+    time.sleep(3)
+
+GPIO.output(18, GPIO.LOW)
+GPIO.output(23, GPIO.LOW)
+
 # Save the trained model to a file
 #with open('linear_regression_model.pkl', 'wb') as file:
     #pickle.dump(model, file)
